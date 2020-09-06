@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="/css/mic_main.css" />
     <link rel="stylesheet" href="/css/dropdownMenu.css" />
-    <meta name="keywords" content="miccall" />
+    <meta name="keywords" content="taikeman" />
     
     	<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 	 
@@ -152,11 +152,45 @@
 
         <div id="main" >
             <div class ="post_page_title_img" style="height: 25rem;background-image: url();background-position: center; background-repeat:no-repeat; background-size:cover;-moz-background-size:cover;overflow:hidden;" >
-                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >hello stranger</h2></a>
+                <a href="#" style="padding: 4rem 4rem 2rem 4rem ;"><h2 >数据库</h2></a>
             </div>
             <!-- Post -->
             <div class="typo" style="padding: 3rem;">
-                
+                <p>存储过程编写经验和优化措施</p>
+<p>介绍：在数据库的开发过程中，经常会遇到复杂的业务逻辑和对数据库的操作，这个时候就会用SP来封装数据库操作。如果项目的SP较多，书写又没有一定的规范，将会影响以后的系统维护困难和大SP逻辑的难以理解，另外如果数据库的数据量大或者项目对SP的性能要求很，就会遇到优化的问题，否则速度有可能很慢，经过亲身经验，一个经过优化过的SP要比一个性能差的SP的效率甚至高几百倍。</p>
+<p>内容：</p>
+<p>1、开发人员如果用到其他库的Table或View，务必在当前库中建立View来实现跨库操作，最好不要直接使用“databse.dbo.table_name”，因为sp_depends不能显示出该SP所使用的跨库table或view，不方便校验。</p>
+<p>2、开发人员在提交SP前，必须已经使用set showplan on分析过查询计划，做过自身的查询优化检查。</p>
+<p>3、高程序运行效率，优化应用程序，在SP编写过程中应该注意以下几点：</p>
+<p>a)        SQL的使用规范：</p>
+<p>i.  尽量避免大事务操作，慎用holdlock子句，提高系统并发能力。<br>ii. 尽量避免反复访问同一张或几张表，尤其是数据量较大的表，可以考虑先根据条件提取数据到临时表中，然后再做连接。<br>iii.尽量避免使用游标，因为游标的效率较差，如果游标操作的数据超过1万行，那么就应该改写；如果使用了游标，就要尽量避免在游标循环中再进行表连接的操作。<br>iv. 注意where字句写法，必须考虑语句顺序，应该根据索引顺序、范围大小来确定条件子句的前后顺序，尽可能的让字段顺序与索引顺序相一致，范围从大到小。<br>v.  不要在where子句中的“=”左边进行函数、算术运算或其他表达式运算，否则系统将可能无法正确使用索引。<br>vi. 尽量使用exists代替select count(1)来判断是否存在记录，count函数只有在统计表中所有行数时使用，而且count(1)比count(*)更有效率。<br>vii.尽量使用“&gt;=”，不要使用“&gt;”。<br>viii.注意一些or子句和union子句之间的替换<br>ix.注意表之间连接的数据类型，避免不同类型数据之间的连接。<br>x. 注意存储过程中参数和数据类型的关系。<br>xi.注意insert、update操作的数据量，防止与其他应用冲突。如果数据量超过200个数据页面（400k），那么系统将会进行锁升级，页级锁会升级成表级锁。</p>
+<p>b) 索引的使用规范：<br>i.  索引的创建要与应用结合考虑，建议大的OLTP表不要超过6个索引。<br>ii. 尽可能的使用索引字段作为查询条件，尤其是聚簇索引，必要时可以通过index index_name来强制指定索引<br>iii.避免对大表查询时进行table scan，必要时考虑新建索引。<br>iv. 在使用索引字段作为条件时，如果该索引是联合索引，那么必须使用到该索引中的第一个字段作为条件时才能保证系统使用该索引，否则该索引将不会被使用。<br>v.  要注意索引的维护，周期性重建索引，重新编译存储过程。</p>
+<p>c)tempdb的使用规范：<br>i.  尽量避免使用distinct、order by、group by、having、join、cumpute，因为这些语句会加重tempdb的负担。<br>ii. 避免频繁创建和删除临时表，减少系统表资源的消耗。<br>iii.在新建临时表时，如果一次性插入数据量很大，那么可以使用select into代替create table，避免log，提高速度；如果数据量不大，为了缓和系统表的资源，建议先create table，然后insert。<br>iv. 如果临时表的数据量较大，需要建立索引，那么应该将创建临时表和建立索引的过程放在单独一个子存储过程中，这样才能保证系统能够很好的使用到该临时表的索引。<br>v.  如果使用到了临时表，在存储过程的最后务必将所有的临时表显式删除，先truncate table，然后drop table，这样可以避免系统表的较长时间锁定。<br>vi. 慎用大的临时表与其他大表的连接查询和修改，减低系统表负担，因为这种操作会在一条语句中多次使用tempdb的系统表。</p>
+<p>d)合理的算法使用：<br>根据上面已提到的SQL优化技术和ASE Tuning手册中的SQL优化内容,结合实际应用,采用多种算法进行比较,以获得消耗资源最少、效率最高的方法。具体可用ASE调优命令：set statistics io on, set statistics time on , set showplan on 等。</p>
+<hr>
+<hr>
+<p>全文索引——CONTAINS 语法<br>我们通常在 WHERE 子句中使用 CONTAINS ，就象这样：SELECT * FROM table_name WHERE CONTAINS(fullText_column,’search contents’)。</p>
+<p>我们通过例子来学习，假设有表 students，其中的 address 是全文本检索的列。</p>
+<ol>
+<li><p>查询住址在北京的学生<br>SELECT student_id,student_name<br>FROM students<br>WHERE CONTAINS( address, ‘beijing’ )<br>remark: beijing是一个单词，要用单引号括起来。</p>
+</li>
+<li><p>查询住址在河北省的学生<br>SELECT student_id,student_name<br>FROM students<br>WHERE CONTAINS( address, ‘“HEIBEI province”‘ )<br>remark: HEBEI province是一个词组，在单引号里还要用双引号括起来。</p>
+</li>
+<li><p>查询住址在河北省或北京的学生<br>SELECT student_id,student_name<br>FROM students<br>WHERE CONTAINS( address, ‘“HEIBEI province” OR beijing’ )<br>remark: 可以指定逻辑操作符(包括 AND ，AND NOT，OR )。</p>
+</li>
+<li><p>查询有 ‘南京路’ 字样的地址<br>SELECT student_id,student_name<br>FROM students<br>WHERE CONTAINS( address, ‘nanjing NEAR road’ )<br>remark: 上面的查询将返回包含 ‘nanjing road’，’nanjing east road’，’nanjing west road’ 等字样的地址。</p>
+<pre><code>   A NEAR B，就表示条件： A 靠近 B。</code></pre>
+</li>
+<li><p>查询以 ‘湖’ 开头的地址<br>SELECT student_id,student_name<br>FROM students<br>WHERE CONTAINS( address, ‘“hu*”‘ )<br>remark: 上面的查询将返回包含 ‘hubei’，’hunan’ 等字样的地址。</p>
+<pre><code>   记住是 *，不是 %。</code></pre>
+</li>
+<li><p>类似加权的查询<br>SELECT student_id,student_name<br>FROM students<br>WHERE CONTAINS( address, ‘ISABOUT (city weight (.8), county wright (.4))’ )<br>remark: ISABOUT 是这种查询的关键字，weight 指定了一个介于 0~1之间的数，类似系数(我的理解)。表示不同条件有不同的侧重。</p>
+</li>
+<li><p>单词的多态查询<br>SELECT student_id,student_name<br>FROM students<br>WHERE CONTAINS( address, ‘FORMSOF (INFLECTIONAL,street)’ )<br>remark: 查询将返回包含 ‘street’，’streets’等字样的地址。</p>
+<pre><code>  对于动词将返回它的不同的时态，如：dry，将返回 dry，dried，drying 等等。</code></pre>
+</li>
+</ol>
+
             </div>
 
             <!-- Post Comments -->
